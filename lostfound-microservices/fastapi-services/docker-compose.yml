@@ -1,0 +1,98 @@
+# Lost & Found - FastAPI microservices
+#   user-service     -> http://localhost:8001/docs
+#   item-service     -> http://localhost:8002/docs   (calls user + handover services)
+#   handover-service -> http://localhost:8003/docs
+#   swagger-ui       -> http://localhost:8080      (all three services in one dropdown)
+#   db               -> MySQL (internal only, not published to the host)
+
+x-db-env: &db-env
+  DB_HOST: db
+  DB_PORT: "3306"
+  DB_USER: root
+  DB_PASSWORD: ${DB_PASSWORD:-lostfound_root}
+  DB_NAME: college_lost_found
+
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: fastapi-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-lostfound_root}
+      MYSQL_DATABASE: college_lost_found
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+    networks:
+      - lostfound-network
+
+  user-service:
+    build: ./user-service
+    container_name: fastapi-user
+    environment: *db-env
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - lostfound-network
+
+  handover-service:
+    build: ./handover-service
+    container_name: fastapi-handover
+    environment: *db-env
+    ports:
+      - "8003:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - lostfound-network
+
+  item-service:
+    build: ./item-service
+    container_name: fastapi-item
+    environment:
+      <<: *db-env
+      USER_SERVICE_URL: http://user-service:8000
+      HANDOVER_SERVICE_URL: http://handover-service:8000
+    ports:
+      - "8002:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      handover-service:
+        condition: service_started
+    networks:
+      - lostfound-network
+
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    container_name: fastapi-swagger-ui
+    environment:
+      URLS: >-
+        [
+        {"url":"http://localhost:8001/openapi.json","name":"User Service (8001)"},
+        {"url":"http://localhost:8002/openapi.json","name":"Item Service (8002)"},
+        {"url":"http://localhost:8003/openapi.json","name":"Handover Service (8003)"}
+        ]
+    ports:
+      - "8080:8080"
+    networks:
+      - lostfound-network
+
+networks:
+  lostfound-network:
+    driver: bridge
+
+volumes:
+  db-data:

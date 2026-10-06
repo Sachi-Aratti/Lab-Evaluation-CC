@@ -1,0 +1,42 @@
+This is ApacheBench, Version 2.3 <$Revision: 1934973 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking item-service (be patient).....done
+
+
+Server Software:        Apache/2.4.68
+Server Hostname:        item-service
+Server Port:            80
+
+Document Path:          /
+Document Length:        322 bytes
+
+Concurrency Level:      16
+Time taken for tests:   10.000 seconds
+Complete requests:      25554
+Failed requests:        0
+Total transferred:      12982448 bytes
+HTML transferred:       8229032 bytes
+Requests per second:    2555.28 [#/sec] (mean)
+Time per request:       6.262 [ms] (mean)
+Time per request:       0.391 [ms] (mean, across all concurrent requests)
+Transfer rate:          1267.76 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.4      0      19
+Processing:     2    6   2.4      5      50
+Waiting:        2    5   2.2      5      50
+Total:          2    6   2.5      6      51
+
+Percentage of the requests served within a certain time (ms)
+  50%      6
+  66%      6
+  75%      7
+  80%      8
+  90%      9
+  95%     11
+  98%     12
+  99%     14
+ 100%     51 (longest request)

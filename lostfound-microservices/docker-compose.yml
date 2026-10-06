@@ -1,0 +1,29 @@
+services:
+
+  user-service:
+    build: ./user-service
+    container_name: lostfound-user
+    ports:
+      - "8081:80"
+    networks:
+      - lostfound-network
+
+  item-service:
+    build: ./item-service
+    container_name: lostfound-item
+    ports:
+      - "8082:80"
+    networks:
+      - lostfound-network
+
+  handover-service:
+    build: ./handover-service
+    container_name: lostfound-handover
+    ports:
+      - "8083:80"
+    networks:
+      - lostfound-network
+
+networks:
+  lostfound-network:
+    driver: bridge
